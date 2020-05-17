@@ -11,8 +11,10 @@ use Phpactor\Extension\ClassToFile\ClassToFileExtension;
 use Phpactor\Extension\CodeTransform\CodeTransformExtension;
 use Phpactor\Extension\ComposerAutoloader\ComposerAutoloaderExtension;
 use Phpactor\Extension\Logger\LoggingExtension;
+use Phpactor\Extension\Php\PhpExtension;
 use Phpactor\Extension\Rpc\Handler;
 use Phpactor\Extension\Rpc\RpcExtension;
+use Phpactor\Extension\WorseReflection\WorseReflectionExtension;
 use Phpactor\FilePathResolverExtension\FilePathResolverExtension;
 
 class CodeTransformExtensionTest extends TestCase
@@ -21,23 +23,9 @@ class CodeTransformExtensionTest extends TestCase
     {
         $container = $this->createContainer();
 
-        $generators = $container->get(CodeTransformExtension::SERVICE_CLASS_GENERATORS);
-        $this->assertInstanceOf(Generators::class, $generators);
-
-        $generators = $container->get(CodeTransformExtension::SERVICE_CLASS_INFLECTORS);
-        $this->assertInstanceOf(Generators::class, $generators);
-
-        $generators = $container->get(CodeTransformExtension::SERVICE_CODE_TRANSFORM);
-        $this->assertInstanceOf(CodeTransform::class, $generators);
-    }
-
-    public function testRpcHandlers()
-    {
-        $container = $this->createContainer();
-
-        foreach ($container->getServiceIdsForTag(RpcExtension::TAG_RPC_HANDLER) as $serviceId => $attrs) {
-            $handler = $container->get($serviceId);
-            $this->assertInstanceOf(Handler::class, $handler);
+        foreach ($container->getServiceIds() as $serviceId) {
+            $service = $container->get($serviceId);
+            self::assertNotNull($service);
         }
     }
 
@@ -48,7 +36,12 @@ class CodeTransformExtensionTest extends TestCase
             ClassToFileExtension::class,
             ComposerAutoloaderExtension::class,
             FilePathResolverExtension::class,
-            LoggingExtension::class
+            LoggingExtension::class,
+            PhpExtension::class,
+            WorseReflectionExtension::class,
+        ], [
+            CodeTransformExtension::PARAM_TEMPLATE_PATHS => [],
+            FilePathResolverExtension::PARAM_APPLICATION_ROOT => __DIR__,
         ]);
 
         return $container;

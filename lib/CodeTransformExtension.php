@@ -2,51 +2,105 @@
 
 namespace Phpactor\Extension\CodeTransform;
 
+use Phpactor\CodeBuilder\Domain\BuilderFactory;
+use Phpactor\CodeBuilder\Domain\Updater;
+use Phpactor\CodeBuilder\Util\TextFormat;
+use Phpactor\CodeBuilder\Adapter\Twig\TwigExtension;
+use Phpactor\CodeBuilder\Adapter\Twig\TwigRenderer;
+use Phpactor\CodeBuilder\Domain\TemplatePathResolver\PhpVersionPathResolver;
+use Microsoft\PhpParser\Parser;
+use Phpactor\CodeBuilder\Adapter\WorseReflection\WorseBuilderFactory;
+use Phpactor\CodeBuilder\Adapter\TolerantParser\TolerantUpdater;
+use Phpactor\CodeTransform\Adapter\Native\GenerateNew\ClassGenerator;
+use Phpactor\CodeTransform\Adapter\TolerantParser\Refactor\TolerantChangeVisiblity;
+use Phpactor\CodeTransform\Adapter\TolerantParser\Refactor\TolerantImportClass;
+use Phpactor\CodeTransform\Adapter\TolerantParser\Refactor\TolerantExtractExpression;
+use Phpactor\CodeTransform\Adapter\WorseReflection\GenerateFromExisting\InterfaceFromExistingGenerator;
+use Phpactor\CodeTransform\Adapter\TolerantParser\Refactor\TolerantRenameVariable;
+use Phpactor\CodeTransform\Adapter\WorseReflection\Helper\WorseUnresolvableClassNameFinder;
+use Phpactor\CodeTransform\Adapter\WorseReflection\Refactor\WorseExtractMethod;
+use Phpactor\CodeTransform\Adapter\WorseReflection\Refactor\WorseOverrideMethod;
 use Phpactor\CodeTransform\Adapter\WorseReflection\Helper\WorseInterestingOffsetFinder;
+use Phpactor\CodeTransform\Adapter\WorseReflection\Refactor\WorseGenerateAccessor;
+use Phpactor\CodeTransform\Adapter\WorseReflection\Refactor\WorseGenerateMethod;
+use Phpactor\CodeTransform\Adapter\WorseReflection\Refactor\WorseExtractConstant;
 use Phpactor\CodeTransform\CodeTransform;
 use Phpactor\CodeTransform\Domain\Generators;
+use Phpactor\CodeTransform\Domain\Helper\InterestingOffsetFinder;
+use Phpactor\CodeTransform\Domain\Helper\UnresolvableClassNameFinder;
+use Phpactor\CodeTransform\Domain\Refactor\ChangeVisiblity;
+use Phpactor\CodeTransform\Domain\Refactor\ExtractConstant;
+use Phpactor\CodeTransform\Domain\Refactor\ExtractExpression;
+use Phpactor\CodeTransform\Domain\Refactor\ExtractMethod;
+use Phpactor\CodeTransform\Domain\Refactor\GenerateAccessor;
+use Phpactor\CodeTransform\Domain\Refactor\ImportClass;
+use Phpactor\CodeTransform\Domain\Refactor\OverrideMethod;
+use Phpactor\CodeTransform\Domain\Refactor\RenameVariable;
+use Phpactor\CodeTransform\Domain\Refactor\GenerateMethod;
+use Phpactor\Extension\Php\Model\PhpVersionResolver;
+use Phpactor\FilePathResolverExtension\FilePathResolverExtension;
+use Twig\Environment;
+use Twig\Loader\FilesystemLoader;
 use Phpactor\CodeTransform\Domain\Transformers;
+use Twig\Loader\ChainLoader;
 use Phpactor\Container\Container;
 use Phpactor\Container\ContainerBuilder;
 use Phpactor\Container\Extension;
-use Phpactor\Extension\ClassToFile\ClassToFileExtension;
-use Phpactor\Extension\Rpc\RpcExtension;
 use Phpactor\Extension\WorseReflection\WorseReflectionExtension;
 use Phpactor\MapResolver\Resolver;
-use Phpactor\Extension\CodeTransform\Rpc\ClassInflectHandler;
-use Phpactor\Extension\CodeTransform\Rpc\ClassNewHandler;
-use Phpactor\Extension\CodeTransform\Rpc\TransformHandler;
 use RuntimeException;
 
 class CodeTransformExtension implements Extension
 {
-    const TAG_FROM_EXISTING_GENERATOR = 'code_transform.from_existing_generator';
-    const TAG_TRANSFORMER = 'code_transform.transformer';
-    const TAG_NEW_CLASS_GENERATOR = 'code_transform.new_class_generator';
+    public const TAG_FROM_EXISTING_GENERATOR = 'code_transform.from_existing_generator';
+    public const TAG_TRANSFORMER = 'code_transform.transformer';
+    public const TAG_NEW_CLASS_GENERATOR = 'code_transform.new_class_generator';
 
-    const SERVICE_CLASS_GENERATORS = 'code_transform.new_class_generators';
-    const SERVICE_CODE_TRANSFORM = 'code_transform.transform';
-    const SERVICE_CLASS_INFLECTORS = 'code_transform.from_existing_generators';
-    const SERVICE_CLASS_INTERESTING_OFFSET_FINDER = 'code_transform.interestsing_offset_finder';
+    public const SERVICE_CLASS_GENERATORS = 'code_transform.new_class_generators';
+    public const SERVICE_CLASS_INFLECTORS = 'code_transform.from_existing_generators';
+
+    public const PARAM_NEW_CLASS_VARIANTS = 'code_transform.class_new.variants';
+    public const PARAM_TEMPLATE_PATHS = 'code_transform.template_paths';
+    public const PARAM_INDENTATION = 'code_transform.indentation';
+    public const PARAM_GENERATE_ACCESSOR_PREFIX = 'code_transform.refactor.generate_accessor.prefix';
+    public const PARAM_GENERATE_ACCESSOR_UPPER_CASE_FIRST = 'code_transform.refactor.generate_accessor.upper_case_first';
+
+    private const APP_TEMPLATE_PATH = '%application_root%/vendor/phpactor/code-builder/templates';
+
+    private const SERVICE_TOLERANT_PARSER = 'code_transform.tolerant_parser';
 
     /**
      * {@inheritDoc}
      */
     public function configure(Resolver $schema)
     {
+        $schema->setDefaults([
+            self::PARAM_NEW_CLASS_VARIANTS => [],
+            self::PARAM_TEMPLATE_PATHS => [ // Ordered by priority
+                '%project_config%/templates',
+                '%config%/templates',
+            ],
+            self::PARAM_INDENTATION => '    ',
+            self::PARAM_GENERATE_ACCESSOR_PREFIX => '',
+            self::PARAM_GENERATE_ACCESSOR_UPPER_CASE_FIRST => false,
+        ]);
     }
 
     public function load(ContainerBuilder $container)
     {
         $this->registerTransformers($container);
         $this->registerGenerators($container);
-        $this->registerRpc($container);
         $this->registerFinders($container);
+
+        $this->registerUpdater($container);
+        $this->registerRefactorings($container);
+        $this->registerRenderer($container);
+        $this->registerGeneratorImplementations($container);
     }
 
     private function registerTransformers(ContainerBuilder $container)
     {
-        $container->register(self::SERVICE_CODE_TRANSFORM, function (Container $container) {
+        $container->register(CodeTransform::class, function (Container $container) {
             return CodeTransform::fromTransformers($container->get('code_transform.transformers'));
         });
 
@@ -92,36 +146,157 @@ class CodeTransformExtension implements Extension
         });
     }
 
-    private function registerRpc(ContainerBuilder $container)
+    private function registerRefactorings(ContainerBuilder $container)
     {
-        $container->register('code_transform.rpc.handler.class_inflect', function (Container $container) {
-            return new ClassInflectHandler(
-                $container->get(self::SERVICE_CLASS_INFLECTORS),
-                $container->get(ClassToFileExtension::SERVICE_CONVERTER)
+        $container->register(ExtractConstant::class, function (Container $container) {
+            return new WorseExtractConstant(
+                $container->get(WorseReflectionExtension::SERVICE_REFLECTOR),
+                $container->get(Updater::class)
             );
-        }, [ RpcExtension::TAG_RPC_HANDLER => ['name' => ClassInflectHandler::NAME] ]);
+        });
 
-        $container->register('code_transform.rpc.handler.class_new', function (Container $container) {
-            return new ClassNewHandler(
-                $container->get(self::SERVICE_CLASS_GENERATORS),
-                $container->get(ClassToFileExtension::SERVICE_CONVERTER)
+        $container->register(GenerateMethod::class, function (Container $container) {
+            return new WorseGenerateMethod(
+                $container->get(WorseReflectionExtension::SERVICE_REFLECTOR),
+                $container->get(BuilderFactory::class),
+                $container->get(Updater::class)
             );
-        }, [ RpcExtension::TAG_RPC_HANDLER => ['name' => ClassNewHandler::NAME] ]);
+        });
 
-
-        $container->register('code_transform.rpc.handler.transform', function (Container $container) {
-            return new TransformHandler(
-                $container->get(self::SERVICE_CODE_TRANSFORM)
+        $container->register(GenerateAccessor::class, function (Container $container) {
+            return new WorseGenerateAccessor(
+                $container->get(WorseReflectionExtension::SERVICE_REFLECTOR),
+                $container->get(Updater::class),
+                $container->getParameter(self::PARAM_GENERATE_ACCESSOR_PREFIX),
+                $container->getParameter(self::PARAM_GENERATE_ACCESSOR_UPPER_CASE_FIRST)
             );
-        }, [ RpcExtension::TAG_RPC_HANDLER => ['name' => TransformHandler::NAME] ]);
+        });
+
+        $container->register(RenameVariable::class, function (Container $container) {
+            return new TolerantRenameVariable();
+        });
+
+        $container->register(OverrideMethod::class, function (Container $container) {
+            return new WorseOverrideMethod(
+                $container->get(WorseReflectionExtension::SERVICE_REFLECTOR),
+                $container->get(BuilderFactory::class),
+                $container->get(Updater::class)
+            );
+        });
+
+        $container->register(ExtractMethod::class, function (Container $container) {
+            return new WorseExtractMethod(
+                $container->get(WorseReflectionExtension::SERVICE_REFLECTOR),
+                $container->get(BuilderFactory::class),
+                $container->get(Updater::class)
+            );
+        });
+
+        $container->register(ExtractExpression::class, function (Container $container) {
+            return new TolerantExtractExpression();
+        });
+
+        $container->register(ImportClass::class, function (Container $container) {
+            return new TolerantImportClass(
+                $container->get(Updater::class)
+            );
+        });
+
+        $container->register(ChangeVisiblity::class, function (Container $container) {
+            return new TolerantChangeVisiblity();
+        });
+
+        $container->register(UnresolvableClassNameFinder::class, function (Container $container) {
+            return new WorseUnresolvableClassNameFinder(
+                $container->get(WorseReflectionExtension::SERVICE_REFLECTOR)
+            );
+        });
+    }
+
+    private function registerGeneratorImplementations(ContainerBuilder $container)
+    {
+        $container->register('code_transform_extra.class_generator.variants', function (Container $container) {
+            $generators = [
+                'default' => new ClassGenerator($container->get('code_transform.renderer')),
+            ];
+            foreach ($container->getParameter(self::PARAM_NEW_CLASS_VARIANTS) as $variantName => $variant) {
+                $generators[$variantName] = new ClassGenerator($container->get('code_transform.renderer'), $variant);
+            }
+
+            return $generators;
+        }, [ CodeTransformExtension::TAG_NEW_CLASS_GENERATOR => [] ]);
+
+        $container->register('code_transform_extra.from_existing_generator', function (Container $container) {
+            return new InterfaceFromExistingGenerator(
+                $container->get(WorseReflectionExtension::SERVICE_REFLECTOR),
+                $container->get('code_transform.renderer')
+            );
+        }, [ CodeTransformExtension::TAG_FROM_EXISTING_GENERATOR => [
+            'name' => 'interface'
+        ] ]);
+    }
+
+    private function registerUpdater(ContainerBuilder $container)
+    {
+        $container->register(Updater::class, function (Container $container) {
+            return new TolerantUpdater(
+                $container->get('code_transform.renderer'),
+                $container->get(TextFormat::class),
+                $container->get(self::SERVICE_TOLERANT_PARSER)
+            );
+        });
+        $container->register(BuilderFactory::class, function (Container $container) {
+            return new WorseBuilderFactory($container->get(WorseReflectionExtension::SERVICE_REFLECTOR));
+        });
+
+        $container->register(self::SERVICE_TOLERANT_PARSER, function (Container $container) {
+            return new Parser();
+        });
     }
 
     private function registerFinders(ContainerBuilder $container)
     {
-        $container->register(self::SERVICE_CLASS_INTERESTING_OFFSET_FINDER, function (Container $container) {
+        $container->register(InterestingOffsetFinder::class, function (Container $container) {
             return new WorseInterestingOffsetFinder(
                 $container->get(WorseReflectionExtension::SERVICE_REFLECTOR)
             );
+        });
+    }
+
+    private function registerRenderer(ContainerBuilder $container)
+    {
+        $container->register('code_transform.twig_loader', function (Container $container) {
+            $resolver = $container->get(FilePathResolverExtension::SERVICE_FILE_PATH_RESOLVER);
+            $loader = new ChainLoader();
+            $templatePaths = $container->getParameter(self::PARAM_TEMPLATE_PATHS);
+            $templatePaths[] = self::APP_TEMPLATE_PATH;
+
+            $resolvedTemplatePaths = array_map(function (string $path) use ($resolver) {
+                return $resolver->resolve($path);
+            }, $templatePaths);
+
+            $phpVersion = $container->get(PhpVersionResolver::class)->resolve();
+            $paths = (new PhpVersionPathResolver($phpVersion))->resolve($resolvedTemplatePaths);
+
+            foreach ($paths as $path) {
+                $loader->addLoader(new FilesystemLoader($path));
+            }
+
+            return $loader;
+        });
+
+        $container->register('code_transform.renderer', function (Container $container) {
+            $twig = new Environment($container->get('code_transform.twig_loader'), [
+                'strict_variables' => true,
+            ]);
+            $renderer = new TwigRenderer($twig);
+            $twig->addExtension(new TwigExtension($renderer, $container->get(TextFormat::class)));
+
+            return $renderer;
+        });
+
+        $container->register(TextFormat::class, function (Container $container) {
+            return new TextFormat($container->getParameter(self::PARAM_INDENTATION));
         });
     }
 
