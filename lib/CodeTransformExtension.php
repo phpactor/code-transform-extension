@@ -37,6 +37,11 @@ use Phpactor\CodeTransform\Domain\Refactor\ImportClass;
 use Phpactor\CodeTransform\Domain\Refactor\OverrideMethod;
 use Phpactor\CodeTransform\Domain\Refactor\RenameVariable;
 use Phpactor\CodeTransform\Domain\Refactor\GenerateMethod;
+use Phpactor\Extension\CodeTransform\Rpc\TransformHandler;
+use Phpactor\Extension\CodeTransform\Rpc\ClassNewHandler;
+use Phpactor\Extension\ClassToFile\ClassToFileExtension;
+use Phpactor\Extension\Rpc\RpcExtension;
+use Phpactor\Extension\CodeTransform\Rpc\ClassInflectHandler;
 use Phpactor\Extension\Php\Model\PhpVersionResolver;
 use Phpactor\FilePathResolverExtension\FilePathResolverExtension;
 use Twig\Environment;
@@ -91,6 +96,11 @@ class CodeTransformExtension implements Extension
         $this->registerTransformers($container);
         $this->registerGenerators($container);
         $this->registerFinders($container);
+
+        if (class_exists(RpcExtension::class)) {
+            // this shouldn't be here
+            $this->registerRpc($container);
+        }
 
         $this->registerUpdater($container);
         $this->registerRefactorings($container);
@@ -308,5 +318,29 @@ class CodeTransformExtension implements Extension
                 $serviceId
             ));
         }
+    }
+
+    private function registerRpc(ContainerBuilder $container): void
+    {
+        $container->register('code_transform.rpc.handler.class_inflect', function (Container $container) {
+            return new ClassInflectHandler(
+                $container->get(self::SERVICE_CLASS_INFLECTORS),
+                $container->get(ClassToFileExtension::SERVICE_CONVERTER)
+            );
+        }, [ RpcExtension::TAG_RPC_HANDLER => ['name' => ClassInflectHandler::NAME] ]);
+
+        $container->register('code_transform.rpc.handler.class_new', function (Container $container) {
+            return new ClassNewHandler(
+                $container->get(self::SERVICE_CLASS_GENERATORS),
+                $container->get(ClassToFileExtension::SERVICE_CONVERTER)
+            );
+        }, [ RpcExtension::TAG_RPC_HANDLER => ['name' => ClassNewHandler::NAME] ]);
+
+
+        $container->register('code_transform.rpc.handler.transform', function (Container $container) {
+            return new TransformHandler(
+                $container->get(CodeTransform::class)
+            );
+        }, [ RpcExtension::TAG_RPC_HANDLER => ['name' => TransformHandler::NAME] ]);
     }
 }

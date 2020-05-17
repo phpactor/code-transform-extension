@@ -18,7 +18,7 @@
         "phpactor/php-extension": "^0.1"
     },
     "require-dev": {
-        "phpactor/rpc-extension": "^0.1.0@dev",
+        "phpactor/rpc-extension": "^0.1.0",
         "phpstan/phpstan": "~0.11.0",
         "phpunit/phpunit": "~7.0",
         "friendsofphp/php-cs-fixer": "~2.15.0",
