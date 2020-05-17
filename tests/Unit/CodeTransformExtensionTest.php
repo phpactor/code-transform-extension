@@ -3,8 +3,6 @@
 namespace Phpactor\Extension\CodeTransform\Tests\Unit;
 
 use PHPUnit\Framework\TestCase;
-use Phpactor\CodeTransform\CodeTransform;
-use Phpactor\CodeTransform\Domain\Generators;
 use Phpactor\Container\Container;
 use Phpactor\Container\PhpactorContainer;
 use Phpactor\Extension\ClassToFile\ClassToFileExtension;
@@ -12,8 +10,6 @@ use Phpactor\Extension\CodeTransform\CodeTransformExtension;
 use Phpactor\Extension\ComposerAutoloader\ComposerAutoloaderExtension;
 use Phpactor\Extension\Logger\LoggingExtension;
 use Phpactor\Extension\Php\PhpExtension;
-use Phpactor\Extension\Rpc\Handler;
-use Phpactor\Extension\Rpc\RpcExtension;
 use Phpactor\Extension\WorseReflection\WorseReflectionExtension;
 use Phpactor\FilePathResolverExtension\FilePathResolverExtension;
 
