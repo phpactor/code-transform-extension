@@ -12,6 +12,7 @@ use Microsoft\PhpParser\Parser;
 use Phpactor\CodeBuilder\Adapter\WorseReflection\WorseBuilderFactory;
 use Phpactor\CodeBuilder\Adapter\TolerantParser\TolerantUpdater;
 use Phpactor\CodeTransform\Adapter\Native\GenerateNew\ClassGenerator;
+use Phpactor\CodeTransform\Adapter\TolerantParser\ClassToFile\Transformer\ClassNameFixerTransformer;
 use Phpactor\CodeTransform\Adapter\TolerantParser\Refactor\TolerantChangeVisiblity;
 use Phpactor\CodeTransform\Adapter\TolerantParser\Refactor\TolerantImportClass;
 use Phpactor\CodeTransform\Adapter\TolerantParser\Refactor\TolerantExtractExpression;
@@ -23,7 +24,10 @@ use Phpactor\CodeTransform\Adapter\WorseReflection\Refactor\WorseOverrideMethod;
 use Phpactor\CodeTransform\Adapter\WorseReflection\Helper\WorseInterestingOffsetFinder;
 use Phpactor\CodeTransform\Adapter\WorseReflection\Refactor\WorseGenerateAccessor;
 use Phpactor\CodeTransform\Adapter\WorseReflection\Refactor\WorseGenerateMethod;
+use Phpactor\CodeTransform\Adapter\WorseReflection\Transformer\AddMissingProperties;
 use Phpactor\CodeTransform\Adapter\WorseReflection\Refactor\WorseExtractConstant;
+use Phpactor\CodeTransform\Adapter\WorseReflection\Transformer\ImplementContracts;
+use Phpactor\CodeTransform\Adapter\WorseReflection\Transformer\CompleteConstructor;
 use Phpactor\CodeTransform\CodeTransform;
 use Phpactor\CodeTransform\Domain\Generators;
 use Phpactor\CodeTransform\Domain\Helper\InterestingOffsetFinder;
@@ -104,6 +108,7 @@ class CodeTransformExtension implements Extension
 
         $this->registerUpdater($container);
         $this->registerRefactorings($container);
+        $this->registerTransformerImplementations($container);
         $this->registerRenderer($container);
         $this->registerGeneratorImplementations($container);
     }
@@ -342,5 +347,36 @@ class CodeTransformExtension implements Extension
                 $container->get(CodeTransform::class)
             );
         }, [ RpcExtension::TAG_RPC_HANDLER => ['name' => TransformHandler::NAME] ]);
+    }
+
+    private function registerTransformerImplementations(ContainerBuilder $container)
+    {
+        $container->register('code_transform.transformer.complete_constructor', function (Container $container) {
+            return new CompleteConstructor(
+                $container->get(WorseReflectionExtension::SERVICE_REFLECTOR),
+                $container->get(Updater::class)
+            );
+        }, [ 'code_transform.transformer' => [ 'name' => 'complete_constructor' ]]);
+
+        $container->register('code_transform.transformer.implement_contracts', function (Container $container) {
+            return new ImplementContracts(
+                $container->get(WorseReflectionExtension::SERVICE_REFLECTOR),
+                $container->get(Updater::class),
+                $container->get(BuilderFactory::class)
+            );
+        }, [ 'code_transform.transformer' => [ 'name' => 'implement_contracts' ]]);
+
+        $container->register('code_transform.transformer.fix_namespace_class_name', function (Container $container) {
+            return new ClassNameFixerTransformer(
+                $container->get('class_to_file.file_to_class')
+            );
+        }, [ 'code_transform.transformer' => [ 'name' => 'fix_namespace_class_name' ]]);
+
+        $container->register('code_transform.transformer.add_missing_properties', function (Container $container) {
+            return new AddMissingProperties(
+                $container->get(WorseReflectionExtension::SERVICE_REFLECTOR),
+                $container->get(Updater::class)
+            );
+        }, [ 'code_transform.transformer' => [ 'name' => 'add_missing_properties' ]]);
     }
 }
