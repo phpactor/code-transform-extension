@@ -93,6 +93,13 @@ class CodeTransformExtension implements Extension
             self::PARAM_GENERATE_ACCESSOR_PREFIX => '',
             self::PARAM_GENERATE_ACCESSOR_UPPER_CASE_FIRST => false,
         ]);
+        $schema->setDescriptions([
+            self::PARAM_NEW_CLASS_VARIANTS => 'Variants which should be suggested when class-create is invoked',
+            self::PARAM_TEMPLATE_PATHS => 'Paths in which to look for code templates',
+            self::PARAM_INDENTATION => 'Indentation chars to use in code generation and transformation',
+            self::PARAM_GENERATE_ACCESSOR_PREFIX => 'Prefix to use for generated accessors',
+            self::PARAM_GENERATE_ACCESSOR_UPPER_CASE_FIRST => 'If the first letter of a generated accessor should be made uppercase',
+        ]);
     }
 
     public function load(ContainerBuilder $container)
