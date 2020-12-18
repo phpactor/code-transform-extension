@@ -1,0 +1,117 @@
+parameters:
+	ignoreErrors:
+		-
+			message: "#^Method Phpactor\\\\Extension\\\\CodeTransform\\\\CodeTransformExtension\\:\\:registerTransformers\\(\\) has no return typehint specified\\.$#"
+			count: 1
+			path: lib/CodeTransformExtension.php
+
+		-
+			message: "#^Method Phpactor\\\\Extension\\\\CodeTransform\\\\CodeTransformExtension\\:\\:registerGenerators\\(\\) has no return typehint specified\\.$#"
+			count: 1
+			path: lib/CodeTransformExtension.php
+
+		-
+			message: "#^Method Phpactor\\\\Extension\\\\CodeTransform\\\\CodeTransformExtension\\:\\:registerRefactorings\\(\\) has no return typehint specified\\.$#"
+			count: 1
+			path: lib/CodeTransformExtension.php
+
+		-
+			message: "#^Method Phpactor\\\\Extension\\\\CodeTransform\\\\CodeTransformExtension\\:\\:registerGeneratorImplementations\\(\\) has no return typehint specified\\.$#"
+			count: 1
+			path: lib/CodeTransformExtension.php
+
+		-
+			message: "#^Method Phpactor\\\\Extension\\\\CodeTransform\\\\CodeTransformExtension\\:\\:registerUpdater\\(\\) has no return typehint specified\\.$#"
+			count: 1
+			path: lib/CodeTransformExtension.php
+
+		-
+			message: "#^Method Phpactor\\\\Extension\\\\CodeTransform\\\\CodeTransformExtension\\:\\:registerFinders\\(\\) has no return typehint specified\\.$#"
+			count: 1
+			path: lib/CodeTransformExtension.php
+
+		-
+			message: "#^Method Phpactor\\\\Extension\\\\CodeTransform\\\\CodeTransformExtension\\:\\:registerRenderer\\(\\) has no return typehint specified\\.$#"
+			count: 1
+			path: lib/CodeTransformExtension.php
+
+		-
+			message: "#^Method Phpactor\\\\Extension\\\\CodeTransform\\\\CodeTransformExtension\\:\\:assertNameAttribute\\(\\) has no return typehint specified\\.$#"
+			count: 1
+			path: lib/CodeTransformExtension.php
+
+		-
+			message: "#^Method Phpactor\\\\Extension\\\\CodeTransform\\\\CodeTransformExtension\\:\\:assertNameAttribute\\(\\) has parameter \\$attrs with no typehint specified\\.$#"
+			count: 1
+			path: lib/CodeTransformExtension.php
+
+		-
+			message: "#^Method Phpactor\\\\Extension\\\\CodeTransform\\\\CodeTransformExtension\\:\\:assertNameAttribute\\(\\) has parameter \\$serviceId with no typehint specified\\.$#"
+			count: 1
+			path: lib/CodeTransformExtension.php
+
+		-
+			message: "#^Method Phpactor\\\\Extension\\\\CodeTransform\\\\CodeTransformExtension\\:\\:registerTransformerImplementations\\(\\) has no return typehint specified\\.$#"
+			count: 1
+			path: lib/CodeTransformExtension.php
+
+		-
+			message: "#^Method Phpactor\\\\Extension\\\\CodeTransform\\\\Rpc\\\\AbstractClassGenerateHandler\\:\\:configure\\(\\) has no return typehint specified\\.$#"
+			count: 1
+			path: lib/Rpc/AbstractClassGenerateHandler.php
+
+		-
+			message: "#^Method Phpactor\\\\Extension\\\\CodeTransform\\\\Rpc\\\\AbstractClassGenerateHandler\\:\\:generate\\(\\) has parameter \\$arguments with no value type specified in iterable type array\\.$#"
+			count: 1
+			path: lib/Rpc/AbstractClassGenerateHandler.php
+
+		-
+			message: "#^Method Phpactor\\\\Extension\\\\CodeTransform\\\\Rpc\\\\AbstractClassGenerateHandler\\:\\:handle\\(\\) has no return typehint specified\\.$#"
+			count: 1
+			path: lib/Rpc/AbstractClassGenerateHandler.php
+
+		-
+			message: "#^Method Phpactor\\\\Extension\\\\CodeTransform\\\\Rpc\\\\AbstractClassGenerateHandler\\:\\:handle\\(\\) has parameter \\$arguments with no value type specified in iterable type array\\.$#"
+			count: 1
+			path: lib/Rpc/AbstractClassGenerateHandler.php
+
+		-
+			message: "#^Method Phpactor\\\\Extension\\\\CodeTransform\\\\Rpc\\\\AbstractClassGenerateHandler\\:\\:className\\(\\) has no return typehint specified\\.$#"
+			count: 1
+			path: lib/Rpc/AbstractClassGenerateHandler.php
+
+		-
+			message: "#^Method Phpactor\\\\Extension\\\\CodeTransform\\\\Rpc\\\\AbstractClassGenerateHandler\\:\\:writeFileContents\\(\\) has parameter \\$arguments with no value type specified in iterable type array\\.$#"
+			count: 1
+			path: lib/Rpc/AbstractClassGenerateHandler.php
+
+		-
+			message: "#^Method Phpactor\\\\Extension\\\\CodeTransform\\\\Rpc\\\\ClassInflectHandler\\:\\:generate\\(\\) has parameter \\$arguments with no value type specified in iterable type array\\.$#"
+			count: 1
+			path: lib/Rpc/ClassInflectHandler.php
+
+		-
+			message: "#^Method Phpactor\\\\Extension\\\\CodeTransform\\\\Rpc\\\\ClassNewHandler\\:\\:generate\\(\\) has parameter \\$arguments with no value type specified in iterable type array\\.$#"
+			count: 1
+			path: lib/Rpc/ClassNewHandler.php
+
+		-
+			message: "#^Method Phpactor\\\\Extension\\\\CodeTransform\\\\Rpc\\\\TransformHandler\\:\\:configure\\(\\) has no return typehint specified\\.$#"
+			count: 1
+			path: lib/Rpc/TransformHandler.php
+
+		-
+			message: "#^Method Phpactor\\\\Extension\\\\CodeTransform\\\\Rpc\\\\TransformHandler\\:\\:handle\\(\\) has no return typehint specified\\.$#"
+			count: 1
+			path: lib/Rpc/TransformHandler.php
+
+		-
+			message: "#^Method Phpactor\\\\Extension\\\\CodeTransform\\\\Rpc\\\\TransformHandler\\:\\:handle\\(\\) has parameter \\$arguments with no value type specified in iterable type array\\.$#"
+			count: 1
+			path: lib/Rpc/TransformHandler.php
+
+		-
+			message: "#^Method Phpactor\\\\Extension\\\\CodeTransform\\\\Rpc\\\\TransformHandler\\:\\:transformerChoiceAction\\(\\) has no return typehint specified\\.$#"
+			count: 1
+			path: lib/Rpc/TransformHandler.php
+
