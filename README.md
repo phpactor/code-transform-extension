@@ -1,7 +1,7 @@
 CodeTransformExtension
 ======================
 
-[![Build Status](https://travis-ci.org/phpactor/code-transform-extension.svg?branch=master)](https://travis-ci.org/phpactor/code-transform-extension)
+![CI](https://github.com/phpactor/code-transform-extension/workflows/CI/badge.svg)
 
 Base package for code transformation, class generation and inflection.
 
