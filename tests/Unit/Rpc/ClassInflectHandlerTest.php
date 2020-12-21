@@ -21,7 +21,7 @@ class ClassInflectHandlerTest extends AbstractClassGenerateHandlerTest
      */
     private $generator;
 
-    public function setUp()
+    protected function setUp(): void
     {
         parent::setUp();
         $this->generator = $this->prophesize(GenerateFromExisting::class);
