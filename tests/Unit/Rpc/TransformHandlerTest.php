@@ -34,7 +34,7 @@ class TransformHandlerTest extends TestCase
      */
     private $transformer;
 
-    public function setUp()
+    public function setUp(): void
     {
         $this->codeTransform = $this->prophesize(CodeTransform::class);
         $this->tester = new HandlerTester(new TransformHandler(

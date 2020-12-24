@@ -34,7 +34,7 @@ abstract class AbstractClassGenerateHandlerTest extends TestCase
      */
     protected $workspace;
 
-    public function setUp()
+    public function setUp(): void
     {
         $this->fileToClass = $this->prophesize(FileToClass::class);
         $this->workspace = Workspace::create(__DIR__ . '/../../Workspace');
