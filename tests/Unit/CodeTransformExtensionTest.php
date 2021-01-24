@@ -15,7 +15,7 @@ use Phpactor\FilePathResolverExtension\FilePathResolverExtension;
 
 class CodeTransformExtensionTest extends TestCase
 {
-    public function testLoadServices()
+    public function testLoadServices(): void
     {
         $container = $this->createContainer();
 

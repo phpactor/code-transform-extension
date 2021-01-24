@@ -37,7 +37,7 @@ class ClassInflectHandlerTest extends AbstractClassGenerateHandlerTest
         );
     }
 
-    public function testInflectsClass()
+    public function testInflectsClass(): void
     {
         $this->fileToClass->fileToClassCandidates(
             FilePath::fromString(self::EXAMPLE_PATH)

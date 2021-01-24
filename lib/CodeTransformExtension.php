@@ -81,7 +81,7 @@ class CodeTransformExtension implements Extension
     /**
      * {@inheritDoc}
      */
-    public function configure(Resolver $schema)
+    public function configure(Resolver $schema): void
     {
         $schema->setDefaults([
             self::PARAM_NEW_CLASS_VARIANTS => [],
@@ -102,7 +102,7 @@ class CodeTransformExtension implements Extension
         ]);
     }
 
-    public function load(ContainerBuilder $container)
+    public function load(ContainerBuilder $container): void
     {
         $this->registerTransformers($container);
         $this->registerGenerators($container);
@@ -120,7 +120,7 @@ class CodeTransformExtension implements Extension
         $this->registerGeneratorImplementations($container);
     }
 
-    private function registerTransformers(ContainerBuilder $container)
+    private function registerTransformers(ContainerBuilder $container): void
     {
         $container->register(CodeTransform::class, function (Container $container) {
             return CodeTransform::fromTransformers($container->get('code_transform.transformers'));
@@ -136,7 +136,7 @@ class CodeTransformExtension implements Extension
         });
     }
 
-    private function registerGenerators(ContainerBuilder $container)
+    private function registerGenerators(ContainerBuilder $container): void
     {
         $container->register(self::SERVICE_CLASS_GENERATORS, function (Container $container) {
             $generators = [];
@@ -168,7 +168,7 @@ class CodeTransformExtension implements Extension
         });
     }
 
-    private function registerRefactorings(ContainerBuilder $container)
+    private function registerRefactorings(ContainerBuilder $container): void
     {
         $container->register(ExtractConstant::class, function (Container $container) {
             return new WorseExtractConstant(
@@ -235,7 +235,7 @@ class CodeTransformExtension implements Extension
         });
     }
 
-    private function registerGeneratorImplementations(ContainerBuilder $container)
+    private function registerGeneratorImplementations(ContainerBuilder $container): void
     {
         $container->register('code_transform_extra.class_generator.variants', function (Container $container) {
             $generators = [
@@ -258,7 +258,7 @@ class CodeTransformExtension implements Extension
         ] ]);
     }
 
-    private function registerUpdater(ContainerBuilder $container)
+    private function registerUpdater(ContainerBuilder $container): void
     {
         $container->register(Updater::class, function (Container $container) {
             return new TolerantUpdater(
@@ -276,7 +276,7 @@ class CodeTransformExtension implements Extension
         });
     }
 
-    private function registerFinders(ContainerBuilder $container)
+    private function registerFinders(ContainerBuilder $container): void
     {
         $container->register(InterestingOffsetFinder::class, function (Container $container) {
             return new WorseInterestingOffsetFinder(
@@ -285,7 +285,7 @@ class CodeTransformExtension implements Extension
         });
     }
 
-    private function registerRenderer(ContainerBuilder $container)
+    private function registerRenderer(ContainerBuilder $container): void
     {
         $container->register('code_transform.twig_loader', function (Container $container) {
             $resolver = $container->get(FilePathResolverExtension::SERVICE_FILE_PATH_RESOLVER);
@@ -322,7 +322,7 @@ class CodeTransformExtension implements Extension
         });
     }
 
-    private function assertNameAttribute($attrs, $serviceId)
+    private function assertNameAttribute($attrs, $serviceId): void
     {
         if (!isset($attrs['name'])) {
             throw new RuntimeException(sprintf(
@@ -356,7 +356,7 @@ class CodeTransformExtension implements Extension
         }, [ RpcExtension::TAG_RPC_HANDLER => ['name' => TransformHandler::NAME] ]);
     }
 
-    private function registerTransformerImplementations(ContainerBuilder $container)
+    private function registerTransformerImplementations(ContainerBuilder $container): void
     {
         $container->register('code_transform.transformer.complete_constructor', function (Container $container) {
             return new CompleteConstructor(
