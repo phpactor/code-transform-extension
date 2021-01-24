@@ -44,7 +44,7 @@ class TransformHandlerTest extends TestCase
         $this->transformer = $this->prophesize(Transformer::class);
     }
 
-    public function testPresentsTransformerChoice()
+    public function testPresentsTransformerChoice(): void
     {
         $this->codeTransform->transformers()->willReturn(new Transformers([
             'trans' => $this->transformer->reveal()
@@ -62,7 +62,7 @@ class TransformHandlerTest extends TestCase
         $this->assertEquals(['trans' => 'trans'], $choiceInput->choices());
     }
 
-    public function testTransformsCode()
+    public function testTransformsCode(): void
     {
         $expectedTransformed = SourceCode::fromStringAndPath('HALLO', '/GOODBYE');
 

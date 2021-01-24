@@ -9,15 +9,6 @@ class ClassNewHandler extends AbstractClassGenerateHandler
 {
     const NAME = 'class_new';
 
-    protected function generate(array $arguments): SourceCode
-    {
-        $generator = $this->generators->get($arguments[self::PARAM_VARIANT]);
-        assert($generator instanceof GenerateNew);
-
-        $className = $this->className($arguments[self::PARAM_NEW_PATH]);
-        return $generator->generateNew($className);
-    }
-
     public function name(): string
     {
         return self::NAME;
@@ -26,5 +17,14 @@ class ClassNewHandler extends AbstractClassGenerateHandler
     public function newMessage(): string
     {
         return 'Create at: ';
+    }
+
+    protected function generate(array $arguments): SourceCode
+    {
+        $generator = $this->generators->get($arguments[self::PARAM_VARIANT]);
+        assert($generator instanceof GenerateNew);
+
+        $className = $this->className($arguments[self::PARAM_NEW_PATH]);
+        return $generator->generateNew($className);
     }
 }

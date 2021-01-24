@@ -14,6 +14,11 @@ class ClassInflectHandler extends AbstractClassGenerateHandler
         return self::NAME;
     }
 
+    public function newMessage(): string
+    {
+        return 'Create inflection at: ';
+    }
+
     protected function generate(array $arguments): SourceCode
     {
         $inflector = $this->generators->get($arguments[self::PARAM_VARIANT]);
@@ -26,10 +31,5 @@ class ClassInflectHandler extends AbstractClassGenerateHandler
             $currentClass,
             $targetClass
         );
-    }
-
-    public function newMessage(): string
-    {
-        return 'Create inflection at: ';
     }
 }

@@ -39,7 +39,7 @@ abstract class AbstractClassGenerateHandler extends AbstractHandler
         $this->fileToClass = $fileToClass;
     }
 
-    public function configure(Resolver $resolver)
+    public function configure(Resolver $resolver): void
     {
         $resolver->setDefaults([
             self::PARAM_NEW_PATH => null,
@@ -50,10 +50,6 @@ abstract class AbstractClassGenerateHandler extends AbstractHandler
             self::PARAM_CURRENT_PATH
         ]);
     }
-
-    abstract protected function generate(array $arguments): SourceCode;
-
-    abstract protected function newMessage(): string;
 
     public function handle(array $arguments)
     {
@@ -104,6 +100,10 @@ abstract class AbstractClassGenerateHandler extends AbstractHandler
             (string) $code
         );
     }
+
+    abstract protected function generate(array $arguments): SourceCode;
+
+    abstract protected function newMessage(): string;
 
     protected function className(string $path)
     {

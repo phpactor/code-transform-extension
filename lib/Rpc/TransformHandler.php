@@ -33,7 +33,7 @@ class TransformHandler implements Handler
         return self::NAME;
     }
 
-    public function configure(Resolver $resolver)
+    public function configure(Resolver $resolver): void
     {
         $resolver->setDefaults([
             self::PARAM_NAME => null,

@@ -38,7 +38,7 @@ class ClassNewHandlerTest extends AbstractClassGenerateHandlerTest
         );
     }
 
-    public function testGeneratesNewClass()
+    public function testGeneratesNewClass(): void
     {
         $this->fileToClass->fileToClassCandidates(
             FilePath::fromString($this->exampleNewPath())

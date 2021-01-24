@@ -41,7 +41,7 @@ abstract class AbstractClassGenerateHandlerTest extends TestCase
         $this->workspace->reset();
     }
 
-    public function testAsksToOverwriteExistingFile()
+    public function testAsksToOverwriteExistingFile(): void
     {
         $path = $this->workspace->path('foo');
         file_put_contents($path, 'foo');
@@ -58,7 +58,7 @@ abstract class AbstractClassGenerateHandlerTest extends TestCase
         $this->assertEquals(ClassInflectHandler::PARAM_OVERWRITE_EXISTING, $input->name());
     }
 
-    public function testCancelsOverwritesExistingFile()
+    public function testCancelsOverwritesExistingFile(): void
     {
         $path = $this->workspace->path('foo');
         file_put_contents($path, 'foo');
@@ -73,7 +73,7 @@ abstract class AbstractClassGenerateHandlerTest extends TestCase
         $this->assertInstanceOf(EchoResponse::class, $response);
     }
 
-    public function testAsksForVariant()
+    public function testAsksForVariant(): void
     {
         $response = $this->createTester()->handle($this->createHandler()->name(), [
             ClassInflectHandler::PARAM_CURRENT_PATH => self::EXAMPLE_PATH
