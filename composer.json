@@ -13,7 +13,7 @@
         "php": "^7.3",
         "phpactor/class-to-file-extension": "~0.1",
         "phpactor/code-transform": "^0.4",
-        "phpactor/container": "^1.3.3",
+        "phpactor/container": "^1.3.4",
         "phpactor/php-extension": "^0.1",
         "phpactor/worse-reflection-extension": "^0.2.0@dev"
     },
