@@ -18,6 +18,7 @@ use Phpactor\CodeTransform\Adapter\TolerantParser\Refactor\TolerantImportName;
 use Phpactor\CodeTransform\Adapter\TolerantParser\Refactor\TolerantExtractExpression;
 use Phpactor\CodeTransform\Adapter\WorseReflection\GenerateFromExisting\InterfaceFromExistingGenerator;
 use Phpactor\CodeTransform\Adapter\TolerantParser\Refactor\TolerantRenameVariable;
+use Phpactor\CodeTransform\Adapter\WorseReflection\Helper\WorseMissingMethodFinder;
 use Phpactor\CodeTransform\Adapter\WorseReflection\Helper\WorseUnresolvableClassNameFinder;
 use Phpactor\CodeTransform\Adapter\WorseReflection\Refactor\WorseExtractMethod;
 use Phpactor\CodeTransform\Adapter\WorseReflection\Refactor\WorseOverrideMethod;
@@ -31,6 +32,7 @@ use Phpactor\CodeTransform\Adapter\WorseReflection\Transformer\CompleteConstruct
 use Phpactor\CodeTransform\CodeTransform;
 use Phpactor\CodeTransform\Domain\Generators;
 use Phpactor\CodeTransform\Domain\Helper\InterestingOffsetFinder;
+use Phpactor\CodeTransform\Domain\Helper\MissingMethodFinder;
 use Phpactor\CodeTransform\Domain\Helper\UnresolvableClassNameFinder;
 use Phpactor\CodeTransform\Domain\Refactor\ChangeVisiblity;
 use Phpactor\CodeTransform\Domain\Refactor\ExtractConstant;
@@ -281,6 +283,12 @@ class CodeTransformExtension implements Extension
         $container->register(InterestingOffsetFinder::class, function (Container $container) {
             return new WorseInterestingOffsetFinder(
                 $container->get(WorseReflectionExtension::SERVICE_REFLECTOR)
+            );
+        });
+        $container->register(MissingMethodFinder::class, function (Container $container) {
+            return new WorseMissingMethodFinder(
+                $container->get(WorseReflectionExtension::SERVICE_REFLECTOR),
+                $container->get(self::SERVICE_TOLERANT_PARSER)
             );
         });
     }
